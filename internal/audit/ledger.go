@@ -15,8 +15,22 @@ func Append(events *map[string][]domain.AuditEvent, event domain.AuditEvent) {
 	if len(chain) > 0 {
 		event.PreviousHash = chain[len(chain)-1].EventHash
 	}
+	// 深拷贝 Details，避免调用方持有的 map 与底层账本共享引用，
+	// 后续外部修改会污染审计哈希链。
+	event.Details = cloneDetails(event.Details)
 	event.EventHash = hashEvent(event)
 	(*events)[event.SessionID] = append(chain, event)
+}
+
+func cloneDetails(input map[string]string) map[string]string {
+	if input == nil {
+		return nil
+	}
+	copied := make(map[string]string, len(input))
+	for key, value := range input {
+		copied[key] = value
+	}
+	return copied
 }
 
 func hashEvent(event domain.AuditEvent) string {

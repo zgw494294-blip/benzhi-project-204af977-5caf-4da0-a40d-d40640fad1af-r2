@@ -78,9 +78,25 @@ func cloneLedger(input Ledger) (Ledger, error) {
 		}
 		copied := make([]domain.AuditEvent, len(events))
 		copy(copied, events)
+		// Details 是 map 引用类型，浅拷贝会使快照与存储共享底层 map，
+		// 调用方修改返回的审计详情会写回存储并破坏哈希链，因此必须深拷贝。
+		for index := range copied {
+			copied[index].Details = cloneStringMap(copied[index].Details)
+		}
 		output.Audits[id] = copied
 	}
 	return output, nil
+}
+
+func cloneStringMap(input map[string]string) map[string]string {
+	if input == nil {
+		return nil
+	}
+	copied := make(map[string]string, len(input))
+	for key, value := range input {
+		copied[key] = value
+	}
+	return copied
 }
 
 func normalizeLedger(input Ledger) Ledger {
