@@ -28,7 +28,7 @@ func loadLedger(path string) (Ledger, error) {
 		}
 	}
 	if primaryValidationErr != nil && backupValidationErr != nil {
-		return Ledger{}, fmt.Errorf("主账本和恢复副本校验均失败: 主账本=%v；恢复副本=%v", primaryValidationErr, backupValidationErr)
+		return Ledger{}, fmt.Errorf("主账本和恢复副本校验均失败: 主账本=%w；恢复副本=%w", primaryValidationErr, backupValidationErr)
 	}
 	if os.IsNotExist(primaryErr) && os.IsNotExist(backupErr) {
 		return NewLedger(), nil
