@@ -45,6 +45,10 @@ func (s *Store) Snapshot() Ledger {
 }
 
 // UpdateContext is the cancellation-aware entry point for callers that own a request lifecycle.
+// A request that is cancelled while waiting for the transaction lock, or whose context is
+// cancelled after the mutator has modified the candidate state, will not be persisted: the
+// in-memory snapshot and revision stay unchanged, and the returned error is recognised by
+// errors.Is(err, context.Canceled).
 func (s *Store) UpdateContext(ctx context.Context, mutator func(*Ledger) error) error {
 	if ctx == nil {
 		ctx = context.Background()
@@ -56,11 +60,22 @@ func (s *Store) UpdateContext(ctx context.Context, mutator func(*Ledger) error) 
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	// Re-check cancellation after acquiring the lock: the request may have been
+	// cancelled while waiting for the transaction lock.
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	candidate, err := cloneLedger(s.data)
 	if err != nil {
 		return fmt.Errorf("复制账本失败: %w", err)
 	}
 	if err := mutator(&candidate); err != nil {
+		return err
+	}
+	// Re-check cancellation after the mutator has modified the candidate state:
+	// a cancelled request must not persist, increment the revision, or replace
+	// the in-memory snapshot.
+	if err := ctx.Err(); err != nil {
 		return err
 	}
 	candidate = normalizeLedger(candidate)
