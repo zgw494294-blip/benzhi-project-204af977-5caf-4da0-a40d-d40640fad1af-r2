@@ -23,17 +23,17 @@ func loadLedger(path string) (Ledger, error) {
 			return backup, nil
 		}
 	}
-	if primaryValidationErr != nil && os.IsNotExist(backupErr) {
-		return NewLedger(), nil
-	}
+	// 首次启动：主账本和恢复副本都不存在，返回空账本。
 	if os.IsNotExist(primaryErr) && os.IsNotExist(backupErr) {
 		return NewLedger(), nil
 	}
+	// 主账本可解析但校验失败（例如 schemaVersion 不受支持或数据损坏），且没有可用的恢复副本，
+	// 必须把校验错误向上抛出，避免静默丢失已有校准数据。
+	if primaryValidationErr != nil {
+		return Ledger{}, fmt.Errorf("主账本校验失败且恢复副本不可用: %w", primaryValidationErr)
+	}
 	if primaryErr != nil {
 		return Ledger{}, fmt.Errorf("主账本和恢复副本均不可用: %w", primaryErr)
-	}
-	if primaryValidationErr != nil {
-		return Ledger{}, fmt.Errorf("主账本校验失败: %w", primaryValidationErr)
 	}
 	return Ledger{}, fmt.Errorf("主账本和恢复副本均不可用: %w", backupErr)
 }
