@@ -43,7 +43,8 @@ func (s *Service) ListSessionsByFilters(filters SessionListFilters) ([]domain.Ca
 	s.cacheMu.Lock()
 	if cached, ok := s.listCache[cacheKey]; ok {
 		if cached.revision == ledger.Revision {
-			result := cached.sessions
+			result := make([]domain.CalibrationSession, len(cached.sessions))
+			copy(result, cached.sessions)
 			s.cacheMu.Unlock()
 			return result, nil
 		}
@@ -60,8 +61,10 @@ func (s *Service) ListSessionsByFilters(filters SessionListFilters) ([]domain.Ca
 		result = append(result, session)
 	}
 	sortSessions(result)
+	cached := make([]domain.CalibrationSession, len(result))
+	copy(cached, result)
 	s.cacheMu.Lock()
-	s.listCache[cacheKey] = sessionListCacheEntry{revision: ledger.Revision, sessions: result}
+	s.listCache[cacheKey] = sessionListCacheEntry{revision: ledger.Revision, sessions: cached}
 	s.cacheMu.Unlock()
 	return result, nil
 }
