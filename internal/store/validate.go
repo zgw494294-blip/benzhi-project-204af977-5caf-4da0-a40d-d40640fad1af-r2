@@ -27,7 +27,7 @@ func validateLedgerWithAudit(ledger Ledger, verifyAudit bool) error {
 			return fmt.Errorf("%w: 会话键 %s 不匹配", ErrCorruptLedger, id)
 		}
 		if err := session.Validate(); err != nil {
-			return fmt.Errorf("%s: %v", ErrCorruptLedger, err)
+			return fmt.Errorf("%w: %v", ErrCorruptLedger, err)
 		}
 		if err := validateSessionChildren(ledger, session); err != nil {
 			return err
@@ -44,7 +44,7 @@ func validateLedgerWithAudit(ledger Ledger, verifyAudit bool) error {
 			return fmt.Errorf("%w: 证书键 %s 不匹配", ErrCorruptLedger, id)
 		}
 		if err := certificate.Validate(); err != nil {
-			return fmt.Errorf("%s: %v", ErrCorruptLedger, err)
+			return fmt.Errorf("%w: %v", ErrCorruptLedger, err)
 		}
 	}
 	for sessionID, samples := range ledger.Samples {
@@ -114,7 +114,7 @@ func validateLedgerWithAudit(ledger Ledger, verifyAudit bool) error {
 		}
 		if verifyAudit {
 			if err := audit.Verify(events); err != nil {
-				return fmt.Errorf("%s: 审计哈希链校验失败: %v", ErrCorruptLedger, err)
+				return fmt.Errorf("%w: 审计哈希链校验失败: %v", ErrCorruptLedger, err)
 			}
 		}
 	}
@@ -181,7 +181,7 @@ func validateSessionChildren(ledger Ledger, session domain.CalibrationSession) e
 			return fmt.Errorf("%w: 标准样本不属于会话", ErrCorruptLedger)
 		}
 		if err := sample.Validate(); err != nil {
-			return fmt.Errorf("%s: %v", ErrCorruptLedger, err)
+			return fmt.Errorf("%w: %v", ErrCorruptLedger, err)
 		}
 	}
 	for _, measurement := range ledger.Measurements[session.ID] {
@@ -189,7 +189,7 @@ func validateSessionChildren(ledger Ledger, session domain.CalibrationSession) e
 			return fmt.Errorf("%w: 测量记录不属于会话", ErrCorruptLedger)
 		}
 		if err := measurement.Validate(); err != nil {
-			return fmt.Errorf("%s: %v", ErrCorruptLedger, err)
+			return fmt.Errorf("%w: %v", ErrCorruptLedger, err)
 		}
 	}
 	for _, review := range ledger.Reviews[session.ID] {
@@ -197,7 +197,7 @@ func validateSessionChildren(ledger Ledger, session domain.CalibrationSession) e
 			return fmt.Errorf("%w: 复核记录不属于会话", ErrCorruptLedger)
 		}
 		if err := review.Validate(); err != nil {
-			return fmt.Errorf("%s: %v", ErrCorruptLedger, err)
+			return fmt.Errorf("%w: %v", ErrCorruptLedger, err)
 		}
 	}
 	return nil
