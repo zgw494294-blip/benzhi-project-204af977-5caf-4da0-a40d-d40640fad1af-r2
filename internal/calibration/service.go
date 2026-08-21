@@ -10,12 +10,13 @@ import (
 )
 
 type Service struct {
-	store      *store.Store
-	now        func() time.Time
-	sequence   uint64
-	sequenceMu sync.Mutex
-	cacheMu    sync.Mutex
-	listCache  map[string]sessionListCacheEntry
+	store         *store.Store
+	now           func() time.Time
+	sequence      uint64
+	sequenceMu    sync.Mutex
+	cacheMu       sync.Mutex
+	listCache     map[string]sessionListCacheEntry
+	progressCache map[string]progressCacheEntry
 }
 
 type sessionListCacheEntry struct {
@@ -23,8 +24,12 @@ type sessionListCacheEntry struct {
 	sessions []domain.CalibrationSession
 }
 
+type progressCacheEntry struct {
+	progress domain.SessionProgress
+}
+
 func NewService(repository *store.Store) *Service {
-	return &Service{store: repository, now: time.Now, listCache: make(map[string]sessionListCacheEntry)}
+	return &Service{store: repository, now: time.Now, listCache: make(map[string]sessionListCacheEntry), progressCache: make(map[string]progressCacheEntry)}
 }
 
 func (s *Service) StorePath() string {

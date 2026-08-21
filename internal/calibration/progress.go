@@ -9,5 +9,15 @@ func (s *Service) GetProgress(id string) (domain.SessionProgress, error) {
 	if _, ok := ledger.Sessions[id]; !ok {
 		return domain.SessionProgress{}, notFound("校准会话")
 	}
-	return domain.BuildProgress(ledger.Samples[id], ledger.Measurements[id], ledger.Reviews[id]), nil
+	s.cacheMu.Lock()
+	if cached, ok := s.progressCache[id]; ok {
+		s.cacheMu.Unlock()
+		return cached.progress, nil
+	}
+	s.cacheMu.Unlock()
+	progress := domain.BuildProgress(ledger.Samples[id], ledger.Measurements[id], ledger.Reviews[id])
+	s.cacheMu.Lock()
+	s.progressCache[id] = progressCacheEntry{progress: progress}
+	s.cacheMu.Unlock()
+	return progress, nil
 }
