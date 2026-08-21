@@ -1,10 +1,6 @@
 package store
 
-import (
-	"encoding/json"
-
-	"benzhi-project-204af977-5caf-4da0-a40d-d40640fad1af/internal/domain"
-)
+import "benzhi-project-204af977-5caf-4da0-a40d-d40640fad1af/internal/domain"
 
 const CurrentSchemaVersion = 1
 
@@ -32,13 +28,57 @@ func NewLedger() Ledger {
 }
 
 func cloneLedger(input Ledger) (Ledger, error) {
-	encoded, err := json.Marshal(input)
-	if err != nil {
-		return Ledger{}, err
+	output := Ledger{
+		SchemaVersion: input.SchemaVersion,
+		Revision:      input.Revision,
+		Sessions:      make(map[string]domain.CalibrationSession, len(input.Sessions)),
+		Samples:       make(map[string][]domain.ReferenceSample, len(input.Samples)),
+		Measurements:  make(map[string][]domain.MeasurementRecord, len(input.Measurements)),
+		Reviews:       make(map[string][]domain.QualityReview, len(input.Reviews)),
+		Certificates:  make(map[string]domain.CalibrationCertificate, len(input.Certificates)),
+		Audits:        make(map[string][]domain.AuditEvent, len(input.Audits)),
 	}
-	var output Ledger
-	if err := json.Unmarshal(encoded, &output); err != nil {
-		return Ledger{}, err
+	for id, session := range input.Sessions {
+		output.Sessions[id] = session
+	}
+	for id, samples := range input.Samples {
+		if samples == nil {
+			output.Samples[id] = nil
+			continue
+		}
+		copied := make([]domain.ReferenceSample, len(samples))
+		copy(copied, samples)
+		output.Samples[id] = copied
+	}
+	for id, measurements := range input.Measurements {
+		if measurements == nil {
+			output.Measurements[id] = nil
+			continue
+		}
+		copied := make([]domain.MeasurementRecord, len(measurements))
+		copy(copied, measurements)
+		output.Measurements[id] = copied
+	}
+	for id, reviews := range input.Reviews {
+		if reviews == nil {
+			output.Reviews[id] = nil
+			continue
+		}
+		copied := make([]domain.QualityReview, len(reviews))
+		copy(copied, reviews)
+		output.Reviews[id] = copied
+	}
+	for id, certificate := range input.Certificates {
+		output.Certificates[id] = certificate
+	}
+	for id, events := range input.Audits {
+		if events == nil {
+			output.Audits[id] = nil
+			continue
+		}
+		copied := make([]domain.AuditEvent, len(events))
+		copy(copied, events)
+		output.Audits[id] = copied
 	}
 	return output, nil
 }
