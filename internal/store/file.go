@@ -10,16 +10,25 @@ import (
 
 func loadLedger(path string) (Ledger, error) {
 	primary, primaryErr := readLedgerFile(path)
+	var primaryValidationErr error
 	if primaryErr == nil {
 		if err := validateLedger(primary); err == nil {
 			return primary, nil
+		} else {
+			primaryValidationErr = err
 		}
 	}
 	backup, backupErr := readLedgerFile(path + ".bak")
+	var backupValidationErr error
 	if backupErr == nil {
 		if err := validateLedger(backup); err == nil {
 			return backup, nil
+		} else {
+			backupValidationErr = err
 		}
+	}
+	if primaryValidationErr != nil && backupValidationErr != nil {
+		return Ledger{}, fmt.Errorf("主账本和恢复副本校验均失败: 主账本=%v；恢复副本=%v", primaryValidationErr, backupValidationErr)
 	}
 	if os.IsNotExist(primaryErr) && os.IsNotExist(backupErr) {
 		return NewLedger(), nil
