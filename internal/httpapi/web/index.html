@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111518">
+  <title>星测校准台 · 观测设备校准工作台</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳转到主要内容</a>
+  <header class="topbar">
+    <div class="brand-lockup">
+      <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div>
+        <p class="eyebrow">OBSERVATORY / CALIBRATION</p>
+        <h1>星测校准台</h1>
+      </div>
+    </div>
+    <div class="topbar-meta">
+      <span class="live-dot" aria-hidden="true"></span>
+      <span>本地账本在线</span>
+      <span class="meta-divider" aria-hidden="true"></span>
+      <span id="clock">--:--:--</span>
+    </div>
+  </header>
+
+  <main id="main-content" class="app-shell">
+    <section class="hero-strip" aria-labelledby="page-title">
+      <div>
+        <p class="section-kicker">CALIBRATION CONTROL / 01</p>
+        <h2 id="page-title">校准会话</h2>
+        <p class="hero-copy">把每一次观测设备读数，收进一条可验证的工程轨迹。</p>
+      </div>
+      <button class="button button-primary" id="new-session-button" type="button">新建校准会话</button>
+    </section>
+
+    <section class="workspace-grid">
+      <aside class="session-rail" aria-label="校准会话列表">
+        <div class="rail-heading">
+          <div>
+            <p class="section-kicker">SESSION INDEX</p>
+            <h3>全部会话</h3>
+          </div>
+          <span class="count-chip" id="session-count">0</span>
+        </div>
+        <label class="search-field">
+          <span class="sr-only">搜索设备或会话</span>
+          <input id="session-search" type="search" placeholder="搜索设备或编号" autocomplete="off">
+        </label>
+        <div id="session-list" class="session-list" aria-live="polite"></div>
+        <div id="empty-sessions" class="empty-state">
+          <span class="empty-index">00</span>
+          <p>还没有校准会话</p>
+          <span>从一台设备开始建立记录。</span>
+        </div>
+      </aside>
+
+      <section class="detail-pane" aria-live="polite">
+        <div id="empty-detail" class="detail-empty">
+          <div class="crosshair" aria-hidden="true"><span></span><span></span></div>
+          <p class="section-kicker">NO ACTIVE SESSION</p>
+          <h3>选择一个校准会话</h3>
+          <p>会话状态、测量进度、复核决定和证书将在这里汇总。</p>
+        </div>
+
+        <div id="detail-content" class="hidden">
+          <div class="detail-header">
+            <div>
+              <p class="section-kicker" id="detail-id">SESSION / --</p>
+              <h3 id="detail-title">--</h3>
+              <p class="detail-subtitle" id="detail-meta">--</p>
+            </div>
+            <div class="detail-status-wrap">
+              <span id="detail-status" class="status-badge">--</span>
+              <span class="version-label">版本 <strong id="detail-version">--</strong></span>
+            </div>
+          </div>
+
+          <div class="metric-grid">
+            <article class="metric-card">
+              <span>标准样本</span>
+              <strong id="metric-samples">0</strong>
+              <small id="metric-samples-note">待登记</small>
+            </article>
+            <article class="metric-card metric-accent">
+              <span>合格读数</span>
+              <strong id="metric-qualified">0%</strong>
+              <small id="metric-qualified-note">尚未开始</small>
+            </article>
+            <article class="metric-card">
+              <span>审计事件</span>
+              <strong id="metric-audits">0</strong>
+              <small id="metric-audits-note">完整性待校验</small>
+            </article>
+            <article class="metric-card">
+              <span>观测波段</span>
+              <strong id="metric-band">--</strong>
+              <small id="metric-owner">--</small>
+            </article>
+          </div>
+
+          <div id="action-panel" class="action-panel"></div>
+
+          <div class="lower-grid">
+            <section class="data-section">
+              <div class="section-heading">
+                <div>
+                  <p class="section-kicker">TRACEABLE INPUTS</p>
+                  <h4>标准样本与测量</h4>
+                </div>
+                <span id="measurement-progress" class="progress-label">0 / 0</span>
+              </div>
+              <div id="sample-table" class="sample-table"></div>
+            </section>
+            <section class="data-section audit-section">
+              <div class="section-heading">
+                <div>
+                  <p class="section-kicker">IMMUTABLE LOG</p>
+                  <h4>审计轨迹</h4>
+                </div>
+                <span id="audit-status" class="audit-status">--</span>
+              </div>
+              <div id="audit-list" class="audit-list"></div>
+            </section>
+          </div>
+
+          <section id="certificate-section" class="certificate-section hidden">
+            <div class="certificate-heading">
+              <div>
+                <p class="section-kicker">SEALED CREDENTIAL</p>
+                <h4>校准证书</h4>
+                <p class="certificate-number" id="certificate-number">--</p>
+              </div>
+              <span id="certificate-verification" class="certificate-verification">--</span>
+            </div>
+            <div class="certificate-hash">
+              <span>摘要哈希</span>
+              <code id="certificate-hash">--</code>
+            </div>
+            <div class="certificate-meta">
+              <span>封存人 <strong id="certificate-sealed-by">--</strong></span>
+              <span>封存时间 <strong id="certificate-sealed-at">--</strong></span>
+            </div>
+            <p id="certificate-failure" class="certificate-failure hidden"></p>
+          </section>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="session-dialog" class="modal-dialog">
+    <form id="session-form" class="modal-form" method="dialog">
+      <div class="modal-heading">
+        <div>
+          <p class="section-kicker">NEW SESSION / 01</p>
+          <h3>新建校准会话</h3>
+        </div>
+        <button class="icon-button" id="close-dialog" type="button" aria-label="关闭新建会话窗口">×</button>
+      </div>
+      <div class="form-grid">
+        <label>设备编号<input name="deviceID" required placeholder="例如 AST-04"></label>
+        <label>设备名称<input name="deviceName" required placeholder="例如 主镜光谱仪"></label>
+        <label>观测波段<input name="observingBand" required placeholder="例如 450–700 nm"></label>
+        <label>负责人<input name="owner" required placeholder="工程师姓名"></label>
+      </div>
+      <div class="sample-intake-heading">
+        <div><p class="section-kicker">REFERENCE SET</p><h4>首批标准样本</h4></div>
+        <button class="button button-quiet" id="add-sample-row" type="button">添加样本</button>
+      </div>
+      <div id="new-sample-rows" class="new-sample-rows"></div>
+      <p class="form-note">可以先创建草稿，稍后在会话中登记标准样本。</p>
+      <div class="modal-actions">
+        <button class="button button-quiet" id="cancel-dialog" type="button">取消</button>
+        <button class="button button-primary" type="submit">创建并打开</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
