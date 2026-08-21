@@ -118,6 +118,21 @@ func validateLedgerWithAudit(ledger Ledger, verifyAudit bool) error {
 			}
 		}
 	}
+	if err := validateAuditCoverage(ledger); err != nil {
+		return err
+	}
+	return nil
+}
+
+func validateAuditCoverage(ledger Ledger) error {
+	if len(ledger.Audits) == 0 {
+		return nil
+	}
+	for sessionID, events := range ledger.Audits {
+		if len(events) == 0 {
+			return fmt.Errorf("%w: 会话 %s 的审计轨迹为空", ErrCorruptLedger, sessionID)
+		}
+	}
 	return nil
 }
 
